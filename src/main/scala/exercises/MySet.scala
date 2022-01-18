@@ -16,6 +16,12 @@ trait MySet[A] extends (A => Boolean) {
   def filter(predicate: A => Boolean): MySet[A]
   def forEach(f: A => Unit): Unit
 
+  def -(elem: A): MySet[A]
+  def --(anotherSet: MySet[A]): MySet[A]
+  def &(anotherSet: MySet[A]): MySet[A]
+
+  def unary_! : MySet[A]
+
 }
 
 class EmptySet[A] extends MySet[A] {
@@ -27,6 +33,33 @@ class EmptySet[A] extends MySet[A] {
   def flatMap[B](f: A => MySet[B]): MySet[B] = new EmptySet[B]
   def filter(predicate: A => Boolean): MySet[A] = this
   def forEach(f: A => Unit): Unit = ()
+
+  def -(elem: A): MySet[A] = this
+  def --(anotherSet: MySet[A]): MySet[A] = this
+  def &(anotherSet: MySet[A]): MySet[A] = this
+
+  override def unary_! : MySet[A] = new AllInclusiveSet[A]
+}
+
+//class AllInclusiveSet[A] extends MySet[A] {
+//  def contains(elem: A): Boolean = true
+//  def +(elem: A): MySet[A] = this
+//  def ++(anotherSet: MySet[A]): MySet[A] = this
+//
+//  def map[B](f: A => B): MySet[B] = ???
+//  def flatMap[B](f: A => MySet[B]): MySet[B] = ???
+//  def filter(predicate: A => Boolean): MySet[A] = ???  // Property-based-set
+//  def forEach(f: A => Unit): Unit = ???
+//
+//  def -(elem: A): MySet[A] = ???
+//  def --(anotherSet: MySet[A]): MySet[A] = filter(!anotherSet)
+//  def &(anotherSet: MySet[A]): MySet[A] = filter(anotherSet)
+//
+//  def unary_! : MySet[A] = new EmptySet[A]
+//}
+
+class PropertyBasedSet[A](property: A => Boolean) extends MySet[A] {
+
 }
 
 class NonEmptySet[A](head: A, tail: MySet[A]) extends MySet[A] {
@@ -52,6 +85,21 @@ class NonEmptySet[A](head: A, tail: MySet[A]) extends MySet[A] {
     f(head)
     tail forEach f
   }
+
+  /**
+   * Exercise
+   * - removing an element
+   * - intersection with another set
+   * - diference with another set
+   */
+
+  def -(elem: A): MySet[A] =
+    if (head == elem) tail
+    else tail - elem + head
+  def --(anotherSet: MySet[A]): MySet[A] = filter(!anotherSet)
+  def &(anotherSet: MySet[A]): MySet[A] = filter(anotherSet)  // intersection = filtering! Because Set if function
+
+  def unary_! : MySet[A]
 }
 
 object MySet {
